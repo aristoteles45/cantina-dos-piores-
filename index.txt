@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cantina dos Piores</title>
+  <link rel="icon" href="https://i.imgur.com/ZUdfz3d.png">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #C0C0C0;
+      font-family: Comic Sans MS, cursive, sans-serif;
+      color: black;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #ADD8E6;
+      border-bottom: 2px solid #FFD700;
+      padding: 10px;
+      text-align: left;
+      font-size: 22px;
+    }
+    .chat-container {
+      padding: 10px;
+    }
+    #messages {
+      background: white;
+      border: 2px solid #00BFFF;
+      border-radius: 8px;
+      height: 500px;
+      overflow-y: scroll;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-bottom: 1px solid #FFD700;
+    }
+    .message-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+    .profile-pic {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .form-area {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input, button, select {
+      font-family: Comic Sans MS, cursive, sans-serif;
+      border: 2px solid #00BFFF;
+      padding: 10px;
+      border-radius: 4px;
+      background: linear-gradient(#E0E0E0, #A0A0A0);
+      cursor: pointer;
+    }
+    button:hover {
+      background: linear-gradient(#FFFFFF, #A0A0A0);
+    }
+  </style>
+</head>
+
+<body>
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_4v3Kx6hMv_JcxvQv3kdyr5mhg6KW35g",
+  authDomain: "cantinadospiores.firebaseapp.com",
+  projectId: "cantinadospiores",
+  storageBucket: "cantinadospiores.firebasestorage.app",
+  messagingSenderId: "698411204825",
+  appId: "1:698411204825:web:c28f93c82d8627ed52bec8",
+  measurementId: "G-77X1G3V249"
+};
+// Initialize Firebase
+// Inicializa Firebase usando compat
+firebase.initializeApp({
+  apiKey: "AIzaSyB_4v3Kx6hMv_JcxvQv3kdyr5mhg6KW35g",
+  authDomain: "cantinadospiores.firebaseapp.com",
+  projectId: "cantinadospiores",
+  storageBucket: "cantinadospiores.appspot.com",
+  messagingSenderId: "698411204825",
+  appId: "1:698411204825:web:c28f93c82d8627ed52bec8",
+  measurementId: "G-77X1G3V249"
+});
+
+// Conecta no Firestore
+const db = firebase.firestore();
+
+
+    // Variáveis de usuário
+    let username = prompt("Digite seu nome:");
+    let userColor = "#000000";
+    let userProfilePic = "";
+
+    // Pegando os elementos do DOM
+    const messages = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const colorInput = document.getElementById('colorInput');
+    const profilePicInput = document.getElementById('profilePicInput');
+
+    // Atualizando a cor do usuário
+    colorInput.addEventListener('input', (e) => {
+      userColor = e.target.value;
+    });
+
+    // Atualizando a foto de perfil do usuário
+    profilePicInput.addEventListener('input', (e) => {
+      userProfilePic = e.target.value;
+    });
+
+    // Função para enviar a mensagem
+    function sendMessage() {
+      const text = messageInput.value;
+      if (text.trim() === "") return;
+
+      // Salvando a mensagem no Firebase
+      db.collection('messages').add({
+        username: username,
+        color: userColor,
+        profilePic: userProfilePic || 'https://i.imgur.com/ZUdfz3d.png',
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Limpar o campo de entrada
+      messageInput.value = "";
+    }
+
+    // Ouvir as mensagens no Firebase em tempo real
+    db.collection('messages').orderBy('timestamp')
+      .onSnapshot(snapshot => {
+        messages.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const msg = document.createElement('div');
+          msg.className = "message";
+          msg.innerHTML = `
+            <div class="message-header">
+              <img src="${data.profilePic}" class="profile-pic">
+              <strong style="color:${data.color}">${data.username}:</strong>
+            </div>
+            <div>${data.text}</div>
+          `;
+          messages.appendChild(msg);
+        });
+        // Rolando a tela para a última mensagem
+        messages.scrollTop = messages.scrollHeight;
+      });
+  </script>
+</body>
+</html>
